@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build output
+web/dist/
+server/public/
+
+# Runtime data (camera config, secrets, generated go2rtc config)
+server/data/config.json
+server/data/go2rtc.yaml
+data/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Env
+.env
+.env.local
+
+# Electron build artifacts
+desktop/dist/
+desktop/out/
+
+# OS
+.DS_Store
+
+# go2rtc binary (downloaded at build/run time)
+bin/go2rtc
+bin/go2rtc.exe

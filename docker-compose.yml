@@ -1,0 +1,48 @@
+services:
+  app:
+    build: .
+    image: rtsp-webui:latest
+    container_name: rtsp-webui-app
+    restart: unless-stopped
+    environment:
+      # Shared access password for the control panel (empty = auth disabled).
+      APP_PASSWORD: ${APP_PASSWORD:-}
+      # Stable secret so sessions survive restarts; set in .env.
+      SESSION_SECRET: ${SESSION_SECRET:-}
+      # go2rtc reachable on the internal compose network.
+      GO2RTC_API_URL: http://go2rtc:1984
+      GO2RTC_API_LISTEN: ":1984"
+      GO2RTC_WEBRTC_LISTEN: ":8555"
+      # MUST be the Docker host's LAN IP and the published WebRTC port so
+      # browsers on the network can establish the media (ICE) connection.
+      GO2RTC_WEBRTC_CANDIDATE: ${GO2RTC_WEBRTC_CANDIDATE:-}
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    volumes:
+      - data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/api/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+
+  go2rtc:
+    image: alexxit/go2rtc:latest
+    container_name: rtsp-webui-go2rtc
+    restart: unless-stopped
+    # Read the config the app deterministically generates into the shared volume.
+    command: ["go2rtc", "-config", "/data/go2rtc.yaml"]
+    depends_on:
+      app:
+        condition: service_healthy
+    volumes:
+      - data:/data
+    ports:
+      # WebRTC media must reach the browser directly (both TCP and UDP).
+      - "8555:8555/tcp"
+      - "8555:8555/udp"
+    # The API port (1984) is intentionally NOT published; it is reached only by
+    # the app over the internal network and proxied (with auth) under /go2rtc.
+
+volumes:
+  data:

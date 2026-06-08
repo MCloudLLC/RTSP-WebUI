@@ -1,0 +1,22 @@
+{
+  "name": "rtsp-webui",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Self-hosted low-latency multi-camera RTSP viewer with a management control panel.",
+  "workspaces": [
+    "server",
+    "web",
+    "desktop"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,web -c blue,green \"npm:dev:server\" \"npm:dev:web\"",
+    "dev:server": "npm --workspace server run dev",
+    "dev:web": "npm --workspace web run dev",
+    "build": "npm --workspace web run build",
+    "start": "npm --workspace server run start",
+    "desktop": "npm --workspace desktop run start"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
