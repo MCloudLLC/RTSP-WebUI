@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "description": "Electron wrapper that runs the RTSP WebUI server + go2rtc locally.",
+  "author": "RTSP WebUI",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder"
   },
   "devDependencies": {
-    "electron": "^42.3.3",
+    "electron": "42.3.3",
     "electron-builder": "^26.8.1"
   },
   "build": {
@@ -22,6 +23,19 @@
     ],
     "extraResources": [
       { "from": "../bin", "to": "bin" }
-    ]
+    ],
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "win": {
+      "target": ["nsis", "portable"]
+    },
+    "mac": {
+      "target": ["dmg", "zip"]
+    },
+    "linux": {
+      "target": ["AppImage", "deb"]
+    }
   }
 }

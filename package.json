@@ -13,6 +13,7 @@
     "dev:server": "npm --workspace server run dev",
     "dev:web": "npm --workspace web run dev",
     "build": "npm --workspace web run build",
+    "build:desktop": "npm run build && npm --workspace desktop run dist",
     "start": "npm --workspace server run start",
     "desktop": "npm --workspace desktop run start"
   },
