@@ -24,6 +24,7 @@ function defaultDashboard() {
   return {
     layout: 'grid', // 'grid' | 'spotlight'
     gridSize: 'auto', // 'auto' | 1..6 (columns)
+    spotlightPosition: 'bottom', // 'bottom' | 'left' | 'right' | 'l' (thumbnail arrangement)
     fit: 'cover', // 'cover' | 'contain'
     gap: 'md', // 'sm' | 'md' | 'lg'
     showLabels: true,
@@ -197,6 +198,9 @@ function sanitizeDashboard(patch = {}) {
       const n = Number(patch.gridSize);
       if (Number.isFinite(n)) out.gridSize = Math.min(6, Math.max(1, Math.round(n)));
     }
+  }
+  if (['bottom', 'left', 'right', 'l'].includes(patch.spotlightPosition)) {
+    out.spotlightPosition = patch.spotlightPosition;
   }
   if (patch.fit === 'cover' || patch.fit === 'contain') out.fit = patch.fit;
   if (['sm', 'md', 'lg'].includes(patch.gap)) out.gap = patch.gap;

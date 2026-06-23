@@ -74,9 +74,16 @@ secret with `openssl rand -hex 32`.
 2. **Live.** A toolbar lets you customize the view (saved automatically):
    - **Layout** — *Grid* (even tiles) or *Spotlight* (one large camera + a
      thumbnail strip; click a thumbnail to promote it).
-   - **Size** — *Auto* (best-fit columns) or a fixed 2×/3×/4× grid.
+   - **Size** — *Auto* (best-fit columns) or a fixed 2×–6× grid.
+   - **Thumbs** (Spotlight only) — arrange the other cameras' thumbnails along
+     the *Bottom*, *Left*, *Right*, or in an *L* that wraps the spotlight. Every
+     arrangement shrinks the thumbnails to fit on screen — no scrolling.
    - **Fit** — *Fill* (crop to tile) or *Fit* (letterbox, no crop).
    - **Gap** and **Labels** toggles for density.
+   - **Cameras** — a checkbox dropdown to pick which cameras appear on the
+     dashboard. This is a per-device view filter (remembered in your browser); it never
+     disables a camera or affects other viewers. To permanently turn a camera
+     off (and tear down its stream), use *Disable* under Manage instead.
    - **Drag any grid tile** to reorder cameras; the order is saved.
    Click a tile (or the Spotlight ⛶ button) for fullscreen. `Esc` closes it.
 3. **Export / Import** under Manage save/restore all cameras and settings as a
