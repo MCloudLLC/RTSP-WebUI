@@ -7,6 +7,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "predist": "node scripts/prepare-resources.mjs",
     "dist": "electron-builder"
   },
   "devDependencies": {
@@ -17,25 +18,54 @@
     "appId": "dev.rtspwebui.desktop",
     "productName": "RTSP WebUI",
     "files": [
-      "main.js",
-      "../server/**",
-      "../web/dist/**"
+      "main.js"
     ],
     "extraResources": [
-      { "from": "../bin", "to": "bin" }
+      {
+        "from": "../bin",
+        "to": "bin"
+      },
+      {
+        "from": "../web/dist",
+        "to": "web/dist"
+      },
+      {
+        "from": "staging/server",
+        "to": "server",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "staging/server/node_modules",
+        "to": "server/node_modules",
+        "filter": [
+          "**/*"
+        ]
+      }
     ],
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     },
     "win": {
-      "target": ["nsis", "portable"]
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "signAndEditExecutable": false
     },
     "mac": {
-      "target": ["dmg", "zip"]
+      "target": [
+        "dmg",
+        "zip"
+      ]
     },
     "linux": {
-      "target": ["AppImage", "deb"]
+      "target": [
+        "AppImage",
+        "deb"
+      ]
     }
   }
 }

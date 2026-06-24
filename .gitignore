@@ -21,6 +21,7 @@ npm-debug.log*
 # Electron build artifacts
 desktop/dist/
 desktop/out/
+desktop/staging/
 
 # OS
 .DS_Store

@@ -31,7 +31,7 @@ function go2rtcBinaryPath() {
 }
 
 function startServer() {
-  const serverEntry = path.join(__dirname, '..', 'server', 'src', 'index.js');
+  const serverEntry = resourcePath('server', 'src', 'index.js');
   const dataDir = path.join(app.getPath('userData'), 'data');
   fs.mkdirSync(dataDir, { recursive: true });
 
@@ -41,7 +41,7 @@ function startServer() {
     HOST: '127.0.0.1',
     PORT: String(PORT),
     DATA_DIR: dataDir,
-    STATIC_DIR: path.join(__dirname, '..', 'web', 'dist'),
+    STATIC_DIR: resourcePath('web', 'dist'),
     GO2RTC_BIN: go2rtcBinaryPath(),
     GO2RTC_API_URL: 'http://127.0.0.1:1984',
     GO2RTC_API_LISTEN: '127.0.0.1:1984',
@@ -98,7 +98,7 @@ async function createWindow() {
   } catch (err) {
     win.loadURL(
       'data:text/html,' +
-        encodeURIComponent(`<h1 style="font-family:sans-serif">Failed to start: ${err.message}</h1>`),
+      encodeURIComponent(`<h1 style="font-family:sans-serif">Failed to start: ${err.message}</h1>`),
     );
   }
 }
