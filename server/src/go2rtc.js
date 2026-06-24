@@ -47,7 +47,14 @@ export class Go2rtc {
       this.proc = null;
     });
     this.proc.on('error', (err) => {
-      this.log.error?.(`Failed to start go2rtc: ${err.message}`);
+      if (err.code === 'ENOENT') {
+        this.log.error?.(
+          `go2rtc binary not found at ${this.binPath}. ` +
+            'Run scripts/download-go2rtc.sh (or scripts/download-go2rtc.ps1 on Windows) to install it.',
+        );
+      } else {
+        this.log.error?.(`Failed to start go2rtc: ${err.message}`);
+      }
       this.proc = null;
     });
   }

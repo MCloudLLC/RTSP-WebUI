@@ -126,6 +126,19 @@ GO2RTC_BIN="$PWD/bin/go2rtc" APP_PASSWORD=dev npm run dev:server
 npm run dev:web
 ```
 
+On **Windows** (PowerShell), use the `.ps1` script and `go2rtc.exe`:
+
+```powershell
+npm install --workspace server --workspace web --include-workspace-root
+./scripts/download-go2rtc.ps1           # puts go2rtc.exe in .\bin
+
+# Terminal 1 — backend (spawns go2rtc locally)
+$env:GO2RTC_BIN = "$PWD\bin\go2rtc.exe"; $env:APP_PASSWORD = "dev"; npm run dev:server
+
+# Terminal 2 — Vite dev server with API/WS proxy to the backend
+npm run dev:web
+```
+
 Open `http://localhost:5173`.
 
 ### Production build (bare metal)
@@ -136,6 +149,13 @@ GO2RTC_BIN="$PWD/bin/go2rtc" APP_PASSWORD=secret npm start
 # serves UI + API on http://localhost:8080
 ```
 
+On **Windows** (PowerShell):
+
+```powershell
+npm run build
+$env:GO2RTC_BIN = "$PWD\bin\go2rtc.exe"; $env:APP_PASSWORD = "secret"; npm start
+```
+
 ## Desktop app (Electron)
 
 The desktop app runs the backend and go2rtc on `127.0.0.1` only — nothing is
@@ -144,6 +164,7 @@ you can move setups between machines.
 
 ```bash
 ./scripts/download-go2rtc.sh           # bundles the go2rtc binary
+                                       # (Windows: ./scripts/download-go2rtc.ps1)
 npm run build                          # build the SPA
 npm install --workspace desktop        # installs Electron
 npm run desktop                        # launch
