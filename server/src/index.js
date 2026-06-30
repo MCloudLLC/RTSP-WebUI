@@ -10,7 +10,7 @@ import httpProxy from '@fastify/http-proxy';
 
 import { ConfigStore } from './config.js';
 import { createAuth } from './auth.js';
-import { Go2rtc } from './go2rtc.js';
+import { Go2rtc, detectLocalCandidates, webrtcPort } from './go2rtc.js';
 import cameraRoutes from './routes/cameras.js';
 import settingsRoutes from './routes/settings.js';
 import configIoRoutes from './routes/configIO.js';
@@ -50,7 +50,7 @@ function resolveSessionSecret(log) {
   } catch (err) {
     log?.warn(
       `Could not persist a session secret (${err.message}); logins will reset on restart. ` +
-        'Set SESSION_SECRET to a fixed value to avoid this.'
+      'Set SESSION_SECRET to a fixed value to avoid this.'
     );
     return randomBytes(32).toString('hex');
   }
@@ -80,12 +80,27 @@ async function main() {
     ttlMs: SESSION_TTL_DAYS * 24 * 60 * 60 * 1000,
   });
 
+  const webrtcListen = process.env.GO2RTC_WEBRTC_LISTEN || ':8555';
+  // WebRTC candidate(s) the browser uses to reach go2rtc directly. If not set
+  // explicitly, auto-detect the host's LAN IPv4 addresses (works for desktop /
+  // bare-metal and host-networked Docker). In bridge-mode Docker the server
+  // only sees its container IP, so set GO2RTC_WEBRTC_CANDIDATE for LAN access.
+  const explicitCandidate = (process.env.GO2RTC_WEBRTC_CANDIDATE || '').trim();
+  const webrtcCandidate = explicitCandidate
+    ? explicitCandidate
+    : detectLocalCandidates(webrtcPort(webrtcListen));
+  if (explicitCandidate) {
+    fastify.log.info(`go2rtc WebRTC candidate (explicit): ${explicitCandidate}`);
+  } else {
+    fastify.log.info(`go2rtc WebRTC candidates (auto-detected): ${webrtcCandidate.join(', ')}`);
+  }
+
   const go2rtc = new Go2rtc({
     apiUrl: GO2RTC_API_URL,
     yamlPath: GO2RTC_YAML_PATH,
     apiListen: process.env.GO2RTC_API_LISTEN || ':1984',
-    webrtcListen: process.env.GO2RTC_WEBRTC_LISTEN || ':8555',
-    webrtcCandidate: process.env.GO2RTC_WEBRTC_CANDIDATE || '',
+    webrtcListen,
+    webrtcCandidate,
     binPath: process.env.GO2RTC_BIN || '',
     log: fastify.log,
   });

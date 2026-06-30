@@ -13,8 +13,11 @@ services:
       GO2RTC_API_URL: http://go2rtc:1984
       GO2RTC_API_LISTEN: ":1984"
       GO2RTC_WEBRTC_LISTEN: ":8555"
-      # MUST be the Docker host's LAN IP and the published WebRTC port so
-      # browsers on the network can establish the media (ICE) connection.
+      # OPTIONAL. For LAN access, set to the Docker host's LAN IP + published
+      # WebRTC port (e.g. 192.168.1.10:8555) so browsers can establish the media
+      # (ICE) connection. Leave empty for same-machine/localhost access. The app
+      # container cannot auto-detect the host's LAN IP, so this must be set for
+      # cross-network video with the default bridge networking.
       GO2RTC_WEBRTC_CANDIDATE: ${GO2RTC_WEBRTC_CANDIDATE:-}
     ports:
       - "${APP_PORT:-8080}:8080"

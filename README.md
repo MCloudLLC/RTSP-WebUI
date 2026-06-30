@@ -51,19 +51,32 @@ Requirements: Docker + Docker Compose.
 
 ```bash
 cp .env.example .env
-# Edit .env: set APP_PASSWORD, SESSION_SECRET, and GO2RTC_WEBRTC_CANDIDATE
+# Edit .env: set APP_PASSWORD and SESSION_SECRET. For LAN access also set
+# GO2RTC_WEBRTC_CANDIDATE (see below).
 docker compose up -d --build
 ```
 
 Open `http://<host>:8080` and sign in.
 
-### Important: `GO2RTC_WEBRTC_CANDIDATE`
+### `GO2RTC_WEBRTC_CANDIDATE` (optional)
 
-For WebRTC to work across the network you **must** set this to the Docker host's
-LAN IP and the published WebRTC port, e.g. `192.168.1.10:8555`. Without it,
-go2rtc may advertise unreachable container addresses and video will fail to
-connect (signaling succeeds, but the picture never appears). Generate a session
-secret with `openssl rand -hex 32`.
+This is the address browsers use to reach go2rtc directly for video. It is
+**optional**:
+
+- **Same-machine / localhost:** leave it empty — it just works.
+- **Desktop / bare-metal runs:** leave it empty — the server auto-detects the
+  host's LAN IP(s) from its network interfaces.
+- **LAN access with Docker Compose:** the app runs in a container and cannot see
+  the host's real LAN IP, so set this to the Docker host's LAN IP + published
+  WebRTC port, e.g. `192.168.1.10:8555`. You can auto-fill it at deploy time:
+
+  ```bash
+  GO2RTC_WEBRTC_CANDIDATE="$(hostname -I | awk '{print $1}'):8555" docker compose up -d
+  ```
+
+Without a reachable candidate, go2rtc advertises unreachable container addresses
+and video fails to connect (signaling succeeds, but the picture never appears).
+Generate a session secret with `openssl rand -hex 32`.
 
 ## Using the app
 

@@ -1,8 +1,45 @@
 import { writeFile, mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { spawn } from 'node:child_process';
+import { networkInterfaces } from 'node:os';
 import { stringify as yamlStringify } from 'yaml';
 import { buildSource, streamNames, validateRtspUrl } from './streamUrl.js';
+
+/**
+ * Parse a go2rtc webrtc listen address (e.g. ":8555" or "127.0.0.1:8555")
+ * into a port number.
+ */
+export function webrtcPort(listen, fallback = 8555) {
+  const m = /:(\d+)\s*$/.exec(String(listen || ''));
+  return m ? Number(m[1]) : fallback;
+}
+
+/**
+ * Auto-detect usable LAN WebRTC candidates from the host's network interfaces.
+ * Returns an array of "ip:port" strings for every non-internal IPv4 address,
+ * plus loopback so same-machine access works.
+ *
+ * This works for desktop/bare-metal and host-networked Docker. In bridge-mode
+ * Docker the server only sees its container IP, so an explicit
+ * GO2RTC_WEBRTC_CANDIDATE is still required for LAN access there.
+ */
+export function detectLocalCandidates(port) {
+  const out = [`127.0.0.1:${port}`];
+  const ifaces = networkInterfaces();
+  for (const addrs of Object.values(ifaces)) {
+    for (const a of addrs || []) {
+      if (a.family === 'IPv4' && !a.internal) out.push(`${a.address}:${port}`);
+    }
+  }
+  return out;
+}
+
+/** Normalize a candidate input (string, comma/space list, or array) to an array. */
+export function normalizeCandidates(value) {
+  if (!value) return [];
+  const list = Array.isArray(value) ? value : String(value).split(/[\s,]+/);
+  return list.map((s) => String(s).trim()).filter(Boolean);
+}
 
 /**
  * go2rtc integration.
@@ -18,7 +55,9 @@ export class Go2rtc {
    * @param {string} opts.yamlPath  Where to write the generated go2rtc.yaml
    * @param {string} [opts.apiListen]      go2rtc api listen address (yaml)
    * @param {string} [opts.webrtcListen]   go2rtc webrtc listen address (yaml)
-   * @param {string} [opts.webrtcCandidate] Public/LAN candidate "host:port" for WebRTC
+   * @param {string|string[]} [opts.webrtcCandidate] Public/LAN candidate(s)
+   *   "host:port" for WebRTC. Accepts a single value, a comma/space separated
+   *   list, or an array. When empty, no candidates are advertised.
    * @param {import('pino').Logger} [opts.log]
    */
   constructor({ apiUrl, yamlPath, apiListen, webrtcListen, webrtcCandidate, binPath, log }) {
@@ -26,7 +65,7 @@ export class Go2rtc {
     this.yamlPath = yamlPath;
     this.apiListen = apiListen || ':1984';
     this.webrtcListen = webrtcListen || ':8555';
-    this.webrtcCandidate = webrtcCandidate || '';
+    this.webrtcCandidates = normalizeCandidates(webrtcCandidate);
     this.binPath = binPath || '';
     this.proc = null;
     this.log = log || console;
@@ -50,7 +89,7 @@ export class Go2rtc {
       if (err.code === 'ENOENT') {
         this.log.error?.(
           `go2rtc binary not found at ${this.binPath}. ` +
-            'Run scripts/download-go2rtc.sh (or scripts/download-go2rtc.ps1 on Windows) to install it.',
+          'Run scripts/download-go2rtc.sh (or scripts/download-go2rtc.ps1 on Windows) to install it.',
         );
       } else {
         this.log.error?.(`Failed to start go2rtc: ${err.message}`);
@@ -96,7 +135,7 @@ export class Go2rtc {
       rtsp: { listen: ':8554' },
       webrtc: {
         listen: this.webrtcListen,
-        ...(this.webrtcCandidate ? { candidates: [this.webrtcCandidate] } : {}),
+        ...(this.webrtcCandidates.length ? { candidates: this.webrtcCandidates } : {}),
       },
       streams,
     };
